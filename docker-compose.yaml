@@ -1,0 +1,20 @@
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  bot:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: kubernetes-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+
+volumes:
+  redis_data:

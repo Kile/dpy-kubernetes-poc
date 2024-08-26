@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: main-process
+spec:
+  selector:
+    matchLabels:
+      app: main-process
+  serviceName: "main-process-service"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: main-process
+    spec:
+      containers:
+      - name: main-container
+        image: discord-bot-kubernetes:latest
+        imagePullPolicy: Never
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: REDIS_HOST
+          value: "redis"
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Extract the pod index from the pod name and set env vars
+          export $(cat .env | xargs)
+          export POD_INDEX=$(echo ${POD_NAME##*-})
+          python3 /app/main.py
+        ports:
+        - containerPort: 8080
